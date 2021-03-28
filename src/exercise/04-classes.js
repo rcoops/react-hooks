@@ -2,24 +2,14 @@
 // http://localhost:3000/isolated/exercise/04-classes.js
 
 import * as React from 'react'
+import { useLocalStorageState } from '../utils';
 
 function Board() {
-  const [squares, setSquares] = React.useState(() => JSON.parse(window.localStorage.getItem('squares')) || Array(9).fill(null));
+  const [squares, setSquares] = useLocalStorageState('squares', Array(9).fill(null));
 
   const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)
   let status = calculateStatus(winner, squares, nextValue)
-
-  const updateLocalStorage = React.useCallback((squares) => {
-    window.localStorage.setItem('squares', JSON.stringify(squares))
-  }, []);
-
-  const updateSquares = React.useCallback((newSquares) => {
-    if (newSquares !== squares) {
-      setSquares(newSquares);
-      updateLocalStorage(newSquares);
-    }
-  }, [squares, setSquares, updateLocalStorage]);
 
   const selectSquare = React.useCallback((square) => {
     if (winner || squares[square]) {
@@ -27,8 +17,8 @@ function Board() {
     }
     const squaresCopy = [...squares]
     squaresCopy[square] = nextValue
-    updateSquares(squaresCopy)
-  }, [squares, winner, nextValue, updateSquares]);
+    setSquares(squaresCopy)
+  }, [squares, winner, nextValue, setSquares]);
 
   const renderSquare = (i) => (
     <button className="square" onClick={() => selectSquare(i)}>
@@ -37,8 +27,8 @@ function Board() {
   );
 
   const restart = React.useCallback(() => {
-    updateSquares(Array(9).fill(null))
-  }, [updateSquares]);
+    setSquares(Array(9).fill(null))
+  }, [setSquares]);
 
   return (
     <div>
