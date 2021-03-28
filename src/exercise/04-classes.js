@@ -1,17 +1,14 @@
 // useState: tic tac toe
-// 💯 (alternate) migrate from classes
 // http://localhost:3000/isolated/exercise/04-classes.js
 
 import * as React from 'react'
 
-// If you'd rather practice refactoring a class component to a function
-// component with hooks, then go ahead and do this exercise.
-
-// 🦉 You've learned all the hooks you need to know to refactor this Board
-// component to hooks. So, let's make it happen!
-
 function Board() {
   const [squares, setSquares] = React.useState(() => JSON.parse(window.localStorage.getItem('squares')) || Array(9).fill(null));
+
+  const nextValue = calculateNextValue(squares)
+  const winner = calculateWinner(squares)
+  let status = calculateStatus(winner, squares, nextValue)
 
   const updateLocalStorage = React.useCallback((squares) => {
     window.localStorage.setItem('squares', JSON.stringify(squares))
@@ -25,14 +22,13 @@ function Board() {
   }, [squares, setSquares, updateLocalStorage]);
 
   const selectSquare = React.useCallback((square) => {
-    if (calculateWinner(squares) || squares[square]) {
+    if (winner || squares[square]) {
       return
     }
-    const nextValue = calculateNextValue(squares)
     const squaresCopy = [...squares]
     squaresCopy[square] = nextValue
     updateSquares(squaresCopy)
-  }, [squares, updateSquares]);
+  }, [squares, winner, nextValue, updateSquares]);
 
   const renderSquare = (i) => (
     <button className="square" onClick={() => selectSquare(i)}>
@@ -41,13 +37,8 @@ function Board() {
   );
 
   const restart = React.useCallback(() => {
-    const squares = Array(9).fill(null);
-    updateSquares(squares)
+    updateSquares(Array(9).fill(null))
   }, [updateSquares]);
-
-  const nextValue = calculateNextValue(squares)
-  const winner = calculateWinner(squares)
-  let status = calculateStatus(winner, squares, nextValue)
 
   return (
     <div>
