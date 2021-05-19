@@ -2,7 +2,9 @@
 // http://localhost:3000/isolated/exercise/04.js
 
 import * as React from 'react'
+import { useLocalStorageState } from '../utils';
 
+const emptyBoard = [Array(9).fill(null)]
 
 function Board({ squares, onClick }) {
 
@@ -34,38 +36,44 @@ function Board({ squares, onClick }) {
 }
 
 function Game() {
-  const [squares, setSquares] = React.useState(() => {
-    const locallyStoredSquares = window.localStorage.getItem('squares')
-    return locallyStoredSquares ? JSON.parse(locallyStoredSquares) : Array(9).fill(null)
-  });
 
+  const [history, setHistory] = useLocalStorageState('tic-tac-toe:history', emptyBoard);
+  const [step, setStep] = useLocalStorageState('tic-tac-toe:step', 0)
+  
+  const squares = history[step]
   const nextValue = calculateNextValue(squares);
   const winner = calculateWinner(squares);
   const status = calculateStatus(winner, squares, nextValue);
-
-  const updateLocalStorage = React.useCallback((newSquares) => {
-    window.localStorage.setItem('squares', JSON.stringify(newSquares));
-  }, []);
-
-  const updateSquares = React.useCallback((newSquares) => {
-    if (newSquares !== squares) {
-      setSquares(newSquares);
-      updateLocalStorage(newSquares);
-    }
-  }, [squares, setSquares, updateLocalStorage])
 
   const selectSquare = React.useCallback((square) => {
     if (winner || squares[square]) {
       return
     }
+    // Remove any history that is after step (if going back)
+    const newHistory = history.slice(0, step + 1)
     const newSquares = [...squares]
     newSquares[square] = nextValue
-    updateSquares(newSquares)
-  }, [updateSquares, squares, winner, nextValue]);
+    setHistory([...newHistory, newSquares]);
+    setStep(newHistory.length)
+  }, [squares, winner, nextValue, history, setHistory, step, setStep]);
 
   const restart = React.useCallback(() => {
-    updateSquares(Array(9).fill(null))
-  }, [updateSquares]);
+    setHistory(emptyBoard)
+    setStep(0)
+  }, [setHistory, setStep]);
+
+  const moves = history.map((_, i) => {
+    const description = i ? `go to move #${i}` : 'go to game start'
+    const isCurrent = step === i
+
+    return (
+      <li key={i}>
+        <button disabled={isCurrent} onClick={() => setStep(i)}>
+          {description}{isCurrent ? ' (current)' : ''}
+        </button>
+      </li>
+    )
+  });
 
   return (
     <div className="game">
@@ -77,7 +85,7 @@ function Game() {
       </div>
       <div className="game-info">
         <div>{status}</div>
-        {/* <ol>{moves}</ol> */}
+        <ol>{moves}</ol>
       </div>
     </div>
   )
