@@ -18,7 +18,7 @@ function Tilt({children}) {
       'max-glare': 0.5,
     })
     return () => tiltNode.vanillaTilt.destroy()
-  }, [tiltRef])
+  }, [])
 
   return (
     <div className="tilt-root" ref={tiltRef}>
