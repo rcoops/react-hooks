@@ -28,6 +28,7 @@ function PokemonInfo({pokemonName}) {
     (async () => {
       if (pokemonName) {
         setError(null)
+        setPokemon(null)
         setPokemon(await getPokemon(pokemonName))
       }
     })()
