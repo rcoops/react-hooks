@@ -2,7 +2,6 @@
 // http://localhost:3000/isolated/final/04.js
 
 import * as React from 'react'
-import { NewLineKind } from 'typescript';
 
 function Board() {
   const [squares, setSquares] = React.useState(Array(9).fill(null))

@@ -3,7 +3,37 @@
 
 import * as React from 'react'
 
-function Board() {
+
+function Board({ squares, onClick }) {
+
+  const renderSquare = React.useCallback((i) => (
+    <button className="square" onClick={() => onClick(i)}>
+      {squares[i]}
+    </button>
+  ), [squares, onClick]);
+
+  return (
+    <div>
+      <div className="board-row">
+        {renderSquare(0)}
+        {renderSquare(1)}
+        {renderSquare(2)}
+      </div>
+      <div className="board-row">
+        {renderSquare(3)}
+        {renderSquare(4)}
+        {renderSquare(5)}
+      </div>
+      <div className="board-row">
+        {renderSquare(6)}
+        {renderSquare(7)}
+        {renderSquare(8)}
+      </div>
+    </div>
+  )
+}
+
+function Game() {
   const [squares, setSquares] = React.useState(() => {
     const locallyStoredSquares = window.localStorage.getItem('squares')
     return locallyStoredSquares ? JSON.parse(locallyStoredSquares) : Array(9).fill(null)
@@ -37,42 +67,17 @@ function Board() {
     updateSquares(Array(9).fill(null))
   }, [updateSquares]);
 
-  const renderSquare = (i) => (
-    <button className="square" onClick={() => selectSquare(i)}>
-      {squares[i]}
-    </button>
-  );
-
-  return (
-    <div>
-      <div className="status">{status}</div>
-      <div className="board-row">
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
-      </div>
-      <div className="board-row">
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
-      </div>
-      <div className="board-row">
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </div>
-      <button className="restart" onClick={restart}>
-        restart
-      </button>
-    </div>
-  )
-}
-
-function Game() {
   return (
     <div className="game">
       <div className="game-board">
-        <Board />
+        <Board onClick={selectSquare} squares={squares} />
+        <button className="restart" onClick={restart}>
+          restart
+        </button>
+      </div>
+      <div className="game-info">
+        <div>{status}</div>
+        {/* <ol>{moves}</ol> */}
       </div>
     </div>
   )
