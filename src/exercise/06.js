@@ -8,39 +8,42 @@ import * as React from 'react'
 // PokemonDataView: the stuff we use to display the pokemon info
 import {fetchPokemon, PokemonDataView, PokemonForm, PokemonInfoFallback} from '../pokemon'
 
+function PokemonError ({error}) {
+  return (
+    <div role="alert">
+      There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+    </div>
+  )
+}
 function PokemonInfo({pokemonName}) {
   const [pokemon, setPokemon] = React.useState(null)
+  const [error, setError] = React.useState(null)
 
   const getPokemon = React.useCallback(async (pokemonName) => {
-    try {
-      return await fetchPokemon(pokemonName)
-    } catch (e) {
-      console.log(e)
-    }
-  }, [])
+    return await fetchPokemon(pokemonName)
+      .catch(e => setError(e))
+  }, [setError])
 
   React.useEffect(() => {
     (async () => {
       if (pokemonName) {
+        setError(null)
         setPokemon(await getPokemon(pokemonName))
       }
     })()
   }, [pokemonName, setPokemon, getPokemon])
-  
-  
-  
-  
-  // 💰 Use the `fetchPokemon` function to fetch a pokemon by its name:
-  //   fetchPokemon('Pikachu').then(
-  //     pokemonData => { /* update all the state here */},
-  //   )
-  // 🐨 return the following things based on the `pokemon` state and `pokemonName` prop:
-  //   1. no pokemonName: 'Submit a pokemon'
-  //   2. pokemonName but no pokemon: <PokemonInfoFallback name={pokemonName} />
-  //   3. pokemon: <PokemonDataView pokemon={pokemon} />
 
+  if (error) {
+    return <PokemonError error={error} />
+  }
   return (
-    pokemonName ? (pokemon ? <PokemonDataView pokemon={pokemon} /> : <PokemonInfoFallback name={pokemonName} />) : 'Submit a pokemon'
+    pokemonName
+      ? (
+        pokemon
+          ? <PokemonDataView pokemon={pokemon} />
+          : <PokemonInfoFallback name={pokemonName} />
+      )
+      : 'Submit a pokemon'
   );
 }
 
