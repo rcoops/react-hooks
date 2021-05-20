@@ -2,6 +2,7 @@
 // http://localhost:3000/isolated/exercise/06.js
 
 import * as React from 'react'
+import { sortAndDeduplicateDiagnostics } from 'typescript';
 // 🐨 you'll want the following additional things from '../pokemon':
 // fetchPokemon: the function we call to get the pokemon info
 // PokemonInfoFallback: the thing we show while we're loading the pokemon info
@@ -24,26 +25,17 @@ const Status = {
 }
 
 function PokemonInfo({pokemonName}) {
-  const [status, setStatus] = React.useState(Status.IDLE)
-  const [pokemon, setPokemon] = React.useState(null)
-  const [error, setError] = React.useState(null)
-
-  const handleError = React.useCallback((error) => {
-    setError(error)
-    setStatus(Status.REJECTED)
-  }, [setError, setStatus])
-
-  const updatePokemon = React.useCallback((newPokemon) => {
-    setPokemon(newPokemon)
-    setStatus(Status.RESOLVED)
-  }, [setPokemon, setStatus])
+  const [{ status, pokemon, error }, setState] = React.useState({ status: Status.IDLE })
 
   React.useEffect(() => {
     if (pokemonName) {
-      setStatus(Status.PENDING)
-      fetchPokemon(pokemonName).then(updatePokemon, handleError)
+      setState({ status: Status.PENDING })
+      fetchPokemon(pokemonName).then(
+        (pokemon) => setState({ status: Status.RESOLVED, pokemon }),
+        (error) => setState({ status: Status.REJECTED, error })
+      )
     }
-  }, [pokemonName, updatePokemon, handleError])
+  }, [pokemonName, setState])
 
   switch (status) {
     case Status.PENDING:
