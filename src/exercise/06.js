@@ -7,6 +7,7 @@ import { sortAndDeduplicateDiagnostics } from 'typescript';
 // fetchPokemon: the function we call to get the pokemon info
 // PokemonInfoFallback: the thing we show while we're loading the pokemon info
 // PokemonDataView: the stuff we use to display the pokemon info
+import { ErrorBoundary } from 'react-error-boundary'
 import {fetchPokemon, PokemonDataView, PokemonForm, PokemonInfoFallback} from '../pokemon'
 
 
@@ -22,19 +23,6 @@ const ErrorFallback = ({ error }) => (
     There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
   </div>
 )
-class ErrorBoundary extends React.Component {
-  state = { error: null }
-  static getDerivedStateFromError(error) {
-    return { error }
-  }
-  render() {
-    const { error } = this.state
-    const Fallback = this.props.fallbackComponent ?? ErrorFallback
-    return error
-      ? <Fallback error={error} />
-      : this.props.children
-  }
-}
 
 function PokemonInfo({pokemonName}) {
   const [{ status, pokemon, error }, setState] = React.useState({ status: Status.IDLE })
@@ -75,7 +63,7 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <ErrorBoundary fallbackComponent={ErrorFallback} key={pokemonName}>
+        <ErrorBoundary FallbackComponent={ErrorFallback} key={pokemonName}>
           <PokemonInfo pokemonName={pokemonName} />
         </ErrorBoundary>
       </div>
