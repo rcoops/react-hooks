@@ -9,19 +9,31 @@ import { sortAndDeduplicateDiagnostics } from 'typescript';
 // PokemonDataView: the stuff we use to display the pokemon info
 import {fetchPokemon, PokemonDataView, PokemonForm, PokemonInfoFallback} from '../pokemon'
 
-function PokemonError ({error}) {
-  return (
-    <div role="alert">
-      There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
-    </div>
-  )
-}
 
 const Status = {
   IDLE: 'idle',
   PENDING: 'pending',
   RESOLVED: 'resolved',
   REJECTED: 'rejected',
+}
+
+const ErrorFallback = ({ error }) => (
+  <div role="alert">
+    There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+  </div>
+)
+class ErrorBoundary extends React.Component {
+  state = { error: null }
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+  render() {
+    const { error } = this.state
+    const Fallback = this.props.fallbackComponent ?? ErrorFallback
+    return error
+      ? <Fallback error={error} />
+      : this.props.children
+  }
 }
 
 function PokemonInfo({pokemonName}) {
@@ -43,10 +55,10 @@ function PokemonInfo({pokemonName}) {
     case Status.RESOLVED:
       return <PokemonDataView pokemon={pokemon} />
     case Status.REJECTED:
-      return <PokemonError error={error} />
+      throw error
     case Status.IDLE:
-      return 'Submit a pokemon'
     default:
+      throw new Error(`Unrecognised status: '${status}'`)
   }
 }
 
@@ -62,7 +74,9 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <PokemonInfo pokemonName={pokemonName} />
+        <ErrorBoundary fallbackComponent={ErrorFallback}>
+          <PokemonInfo pokemonName={pokemonName} />
+        </ErrorBoundary>
       </div>
     </div>
   )
