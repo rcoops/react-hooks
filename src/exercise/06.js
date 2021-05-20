@@ -18,14 +18,17 @@ const Status = {
   REJECTED: 'rejected',
 }
 
-const ErrorFallback = ({ error }) => (
+const ErrorFallback = ({ error, resetErrorBoundary }) => (
   <div role="alert">
     There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+    <button onClick={resetErrorBoundary}>Try Again</button>
   </div>
 )
 
 function PokemonInfo({pokemonName}) {
-  const [{ status, pokemon, error }, setState] = React.useState({ status: Status.IDLE })
+  const [{ status, pokemon, error }, setState] = React.useState({
+    status: pokemonName ? Status.PENDING : Status.IDLE
+  })
 
   React.useEffect(() => {
     if (pokemonName) {
@@ -58,12 +61,16 @@ function App() {
     setPokemonName(newPokemonName)
   }
 
+  function handleReset() {
+    setPokemonName('')
+  }
+
   return (
     <div className="pokemon-info-app">
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <ErrorBoundary FallbackComponent={ErrorFallback} key={pokemonName}>
+        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={handleReset}>
           <PokemonInfo pokemonName={pokemonName} />
         </ErrorBoundary>
       </div>
