@@ -15,37 +15,47 @@ function PokemonError ({error}) {
     </div>
   )
 }
+
+const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+}
+
 function PokemonInfo({pokemonName}) {
+  const [status, setStatus] = React.useState(Status.IDLE)
   const [pokemon, setPokemon] = React.useState(null)
   const [error, setError] = React.useState(null)
 
-  const getPokemon = React.useCallback(async (pokemonName) => {
-    return await fetchPokemon(pokemonName)
-      .catch(e => setError(e))
-  }, [setError])
+  const handleError = React.useCallback((error) => {
+    setError(error)
+    setStatus(Status.REJECTED)
+  }, [setError, setStatus])
+
+  const updatePokemon = React.useCallback((newPokemon) => {
+    setPokemon(newPokemon)
+    setStatus(Status.RESOLVED)
+  }, [setPokemon, setStatus])
 
   React.useEffect(() => {
-    (async () => {
-      if (pokemonName) {
-        setError(null)
-        setPokemon(null)
-        setPokemon(await getPokemon(pokemonName))
-      }
-    })()
-  }, [pokemonName, setPokemon, getPokemon])
+    if (pokemonName) {
+      setStatus(Status.PENDING)
+      fetchPokemon(pokemonName).then(updatePokemon, handleError)
+    }
+  }, [pokemonName, updatePokemon, handleError])
 
-  if (error) {
-    return <PokemonError error={error} />
+  switch (status) {
+    case Status.PENDING:
+      return <PokemonInfoFallback name={pokemonName} />
+    case Status.RESOLVED:
+      return <PokemonDataView pokemon={pokemon} />
+    case Status.REJECTED:
+      return <PokemonError error={error} />
+    case Status.IDLE:
+      return 'Submit a pokemon'
+    default:
   }
-  return (
-    pokemonName
-      ? (
-        pokemon
-          ? <PokemonDataView pokemon={pokemon} />
-          : <PokemonInfoFallback name={pokemonName} />
-      )
-      : 'Submit a pokemon'
-  );
 }
 
 function App() {
