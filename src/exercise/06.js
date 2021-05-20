@@ -57,6 +57,7 @@ function PokemonInfo({pokemonName}) {
     case Status.REJECTED:
       throw error
     case Status.IDLE:
+      return 'Submit a pokemon'
     default:
       throw new Error(`Unrecognised status: '${status}'`)
   }
@@ -74,7 +75,7 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <ErrorBoundary fallbackComponent={ErrorFallback}>
+        <ErrorBoundary fallbackComponent={ErrorFallback} key={pokemonName}>
           <PokemonInfo pokemonName={pokemonName} />
         </ErrorBoundary>
       </div>
